@@ -4,19 +4,21 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/gin-gonic/gin"
-	"uniconnect/internal/websocket"
+	"uniconnect/internal/admin"
 	"uniconnect/internal/auth"
 	"uniconnect/internal/database"
 	"uniconnect/internal/posts"
 	"uniconnect/internal/redis"
+	"uniconnect/internal/websocket"
+
+	"github.com/gin-gonic/gin"
 )
 
 func main() {
 	// DB
 	if err := database.Connect(); err != nil {
-		log.Fatal(err)
-	}
+        log.Fatal(err)
+    }
 
 	// Redis
 	redis.Connect("localhost", "", 6379)
@@ -53,15 +55,12 @@ func main() {
 	}
 
 	// ───────────────────────────────
-	// ADMIN
-	// ───────────────────────────────
-	adminRoutes := api.Group("/admin")
-	adminRoutes.Use(auth.AuthMiddleware("admin"))
-	{
-		adminRoutes.GET("/dashboard", func(c *gin.Context) {
-			c.JSON(http.StatusOK, gin.H{"message": "Welcome admin"})
-		})
-	}
+// ADMIN
+// ───────────────────────────────
+adminRoutes := api.Group("/admin")
+adminRoutes.Use(auth.AuthMiddleware("admin"))
+admin.RegisterAdminRoutes(adminRoutes)
+
 
 	// ───────────────────────────────
 	// POSTS
