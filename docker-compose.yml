@@ -23,7 +23,7 @@ services:
       uniconnect-db:
         condition: service_healthy
     environment:
-      DB_HOST: uniconnect-db
+      DB_HOST: uniconnect
       DB_PORT: "5432"
       DB_USER: postgres
       DB_PASSWORD: postgres
