@@ -48,6 +48,19 @@ type sendReq struct {
 	Content string `json:"content" binding:"required"`
 }
 
+// SendMessageHandler godoc
+// @Summary Send a message
+// @Description Send a message to a chat
+// @Tags Messages
+// @Accept json
+// @Produce json
+// @Param chatId path string true "Chat ID"
+// @Param message body sendReq true "Message content"
+// @Success 201 {object} Message
+// @Failure 400 {object} map[string]string "error"
+// @Failure 401 {object} map[string]string "unauthorized"
+// @Security ApiKeyAuth
+// @Router /api/messages/{chatId} [post]
 func SendMessageHandler(c *gin.Context) {
 	chatId := c.Param("chatId")
 	var req sendReq
@@ -77,6 +90,15 @@ func SendMessageHandler(c *gin.Context) {
 	c.JSON(http.StatusCreated, msg)
 }
 
+// ListMessagesHandler godoc
+// @Summary List chat messages
+// @Description Returns all messages in a chat
+// @Tags Messages
+// @Produce json
+// @Param chatId path string true "Chat ID"
+// @Success 200 {array} Message
+// @Security ApiKeyAuth
+// @Router /api/messages/{chatId} [get]
 func ListMessagesHandler(c *gin.Context) {
 	chatId := c.Param("chatId")
 	msgMu.Lock()

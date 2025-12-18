@@ -16,6 +16,20 @@ type adminReq struct {
 
 // POST /api/setup/create-admin
 // Требует заголовок X-SETUP-TOKEN совпадающий с ENV SETUP_TOKEN
+
+// CreateAdminSetupHandler godoc
+// @Summary Setup admin user
+// @Description Create an admin account (requires setup token)
+// @Tags Setup
+// @Accept json
+// @Produce json
+// @Param setup body adminReq false "Admin credentials (optional)"
+// @Param X-SETUP-TOKEN header string true "Setup token"
+// @Success 200 {object} interface{}
+// @Failure 403 {object} map[string]string "invalid setup token"
+// @Failure 500 {object} map[string]string "error"
+// @Router /api/setup/create-admin [post]
+
 func CreateAdminSetupHandler(c *gin.Context) {
 	token := c.GetHeader("X-SETUP-TOKEN")
 	if token == "" {

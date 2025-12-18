@@ -2,12 +2,22 @@ package posts
 
 import (
 	"net/http"
+	"uniconnect/internal/common"
 	"uniconnect/internal/database"
 
 	"github.com/gin-gonic/gin"
 )
 
-// Like a post
+// LikePostHandler godoc
+// @Summary Like a post
+// @Description Like a post by ID
+// @Tags Posts
+// @Param id path int true "Post ID"
+// @Success 200 {object} map[string]string
+// @Failure 400 {object} map[string]string
+// @Failure 500 {object} map[string]string
+// @Router /posts/{id}/like [post]
+// @Security BearerAuth
 func LikePostHandler(c *gin.Context) {
 	userID := c.GetInt("user_id")
 	postID := c.Param("id")
@@ -17,13 +27,22 @@ func LikePostHandler(c *gin.Context) {
 		postID, userID,
 	)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		c.JSON(http.StatusInternalServerError, common.ErrorResponse{Error: err.Error()})
 		return
 	}
 	c.JSON(http.StatusOK, gin.H{"message": "Post liked"})
 }
 
-// Unlike a post
+// UnlikePostHandler godoc
+// @Summary Unlike a post
+// @Description Remove like from a post by ID
+// @Tags Posts
+// @Param id path int true "Post ID"
+// @Success 200 {object} map[string]string
+// @Failure 400 {object} map[string]string
+// @Failure 500 {object} map[string]string
+// @Router /posts/{id}/like [delete]
+// @Security BearerAuth
 func UnlikePostHandler(c *gin.Context) {
 	userID := c.GetInt("user_id")
 	postID := c.Param("id")
@@ -33,13 +52,22 @@ func UnlikePostHandler(c *gin.Context) {
 		postID, userID,
 	)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		c.JSON(http.StatusInternalServerError, common.ErrorResponse{Error: err.Error()})
 		return
 	}
 	c.JSON(http.StatusOK, gin.H{"message": "Like removed"})
 }
 
-// Save a post
+// SavePostHandler godoc
+// @Summary Save a post
+// @Description Save a post for later by ID
+// @Tags Posts
+// @Param id path int true "Post ID"
+// @Success 200 {object} map[string]string
+// @Failure 400 {object} map[string]string
+// @Failure 500 {object} map[string]string
+// @Router /posts/{id}/save [post]
+// @Security BearerAuth
 func SavePostHandler(c *gin.Context) {
 	userID := c.GetInt("user_id")
 	postID := c.Param("id")
@@ -49,13 +77,22 @@ func SavePostHandler(c *gin.Context) {
 		postID, userID,
 	)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		c.JSON(http.StatusInternalServerError, common.ErrorResponse{Error: err.Error()})
 		return
 	}
 	c.JSON(http.StatusOK, gin.H{"message": "Post saved"})
 }
 
-// Unsave a post
+// UnsavePostHandler godoc
+// @Summary Unsave a post
+// @Description Remove saved post by ID
+// @Tags Posts
+// @Param id path int true "Post ID"
+// @Success 200 {object} map[string]string
+// @Failure 400 {object} map[string]string
+// @Failure 500 {object} map[string]string
+// @Router /posts/{id}/save [delete]
+// @Security BearerAuth
 func UnsavePostHandler(c *gin.Context) {
 	userID := c.GetInt("user_id")
 	postID := c.Param("id")
@@ -65,15 +102,23 @@ func UnsavePostHandler(c *gin.Context) {
 		postID, userID,
 	)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		c.JSON(http.StatusInternalServerError, common.ErrorResponse{Error: err.Error()})
 		return
 	}
 	c.JSON(http.StatusOK, gin.H{"message": "Post unsaved"})
 }
 
+// ListLikedPostsHandler godoc
+// @Summary List liked posts
+// @Description Returns posts liked by authenticated user
+// @Tags Posts
+// @Produce json
+// @Success 200 {array} posts.Post
+// @Failure 500 {object} map[string]string
+// @Router /posts/liked [get]
+// @Security BearerAuth
 func ListLikedPostsHandler(c *gin.Context) {
 	userID := c.GetInt("user_id")
-
 	posts := []Post{}
 
 	err := database.DB.Select(&posts, `
@@ -103,19 +148,28 @@ func ListLikedPostsHandler(c *gin.Context) {
     `, userID)
 
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		c.JSON(http.StatusInternalServerError, common.ErrorResponse{Error: err.Error()})
 		return
 	}
 
 	c.JSON(http.StatusOK, posts)
 }
 
+// SearchPosts godoc
+// @Summary Search posts
+// @Description Search posts by category
+// @Tags Posts
+// @Produce json
+// @Param category query string false "Post category"
+// @Success 200 {array} posts.Post
+// @Failure 401 {object} map[string]string
+// @Failure 500 {object} map[string]string
+// @Router /posts/search [get]
+// @Security BearerAuth
 func SearchPosts(c *gin.Context) {
 	category := c.Query("category")
-
 	var posts []Post
 
-	// Only filter by category
 	err := database.DB.Select(&posts, `
         SELECT *
         FROM posts
@@ -123,7 +177,7 @@ func SearchPosts(c *gin.Context) {
         ORDER BY created_at DESC
     `, category)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		c.JSON(http.StatusInternalServerError, common.ErrorResponse{Error: err.Error()})
 		return
 	}
 

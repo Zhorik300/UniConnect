@@ -1,17 +1,27 @@
 version: "3.9"
 
 services:
+  redis:
+    image: redis:7
+    container_name: uniconnect-redis
+    environment:
+      REDIS_HOST: redis
+      REDIS_PORT: "6379"
+      REDIS_PASSWORD: ""
+    ports:
+      - "6379:6379"
+
   uniconnect-db:
     image: postgres:16
     container_name: uniconnect-db
     environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
-      POSTGRES_DB: postgres
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: uniconnect
     ports:
       - "5432:5432"
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      test: ["CMD-SHELL", "pg_isready -U admin"]
       interval: 5s
       timeout: 3s
       retries: 10
@@ -23,11 +33,15 @@ services:
       uniconnect-db:
         condition: service_healthy
     environment:
-      DB_HOST: uniconnect
+      DB_HOST: uniconnect-db
       DB_PORT: "5432"
-      DB_USER: postgres
-      DB_PASSWORD: postgres
-      DB_NAME: postgres
-
+      DB_USER: admin
+      DB_PASSWORD: password
+      DB_NAME: uniconnect
+      REDIS_HOST: redis
+      REDIS_PORT: "6379"
+      REDIS_PASSWORD: ""
     ports:
       - "8080:8080"
+
+

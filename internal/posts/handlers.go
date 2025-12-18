@@ -10,6 +10,18 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+// CreatePostHandler godoc
+// @Summary Create a post
+// @Description Authenticated user creates a post
+// @Tags Posts
+// @Accept json
+// @Produce json
+// @Param post body posts.Post true "Post info"
+// @Success 201 {object} posts.Post
+// @Failure 400 {object} map[string]string
+// @Failure 500 {object} map[string]string
+// @Router /posts [post]
+// @Security BearerAuth
 func CreatePostHandler(c *gin.Context) {
 	var post Post
 	if err := c.ShouldBindJSON(&post); err != nil {
@@ -46,7 +58,14 @@ func CreatePostHandler(c *gin.Context) {
 	c.JSON(http.StatusOK, post)
 }
 
-// ----------------- LIST -----------------
+// ListPostsHandler godoc
+// @Summary List posts
+// @Description Returns all posts
+// @Tags Posts
+// @Produce json
+// @Success 200 {array} posts.Post
+// @Failure 500 {object} map[string]string
+// @Router /posts [get]
 func ListPostsHandler(c *gin.Context) {
 	page, _ := strconv.Atoi(c.DefaultQuery("page", "1"))
 	limit, _ := strconv.Atoi(c.DefaultQuery("limit", "10"))
@@ -62,7 +81,19 @@ func ListPostsHandler(c *gin.Context) {
 	c.JSON(http.StatusOK, posts)
 }
 
-// ----------------- UPDATE -----------------
+// UpdatePostHandler godoc
+// @Summary Update a post
+// @Description Update a post by ID
+// @Tags Posts
+// @Accept json
+// @Produce json
+// @Param id path int true "Post ID"
+// @Param post body posts.Post true "Post data"
+// @Success 200 {object} posts.Post
+// @Failure 400 {object} map[string]string
+// @Failure 500 {object} map[string]string
+// @Router /posts/{id} [put]
+// @Security BearerAuth
 func UpdatePostHandler(c *gin.Context) {
 	id := c.Param("id")
 	username := c.GetString("username")
@@ -112,7 +143,16 @@ func UpdatePostHandler(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"message": "post updated"})
 }
 
-// ----------------- DELETE -----------------
+// DeletePostHandler godoc
+// @Summary Delete a post
+// @Description Deletes a post by ID
+// @Tags Posts
+// @Param id path int true "Post ID"
+// @Success 200 {object} map[string]string
+// @Failure 400 {object} map[string]string
+// @Failure 500 {object} map[string]string
+// @Router /posts/{id} [delete]
+// @Security BearerAuth
 func DeletePostHandler(c *gin.Context) {
 	id := c.Param("id")
 	username := c.GetString("username")

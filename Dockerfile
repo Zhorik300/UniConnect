@@ -1,5 +1,4 @@
-FROM golang:1.25.1-alpine
-
+FROM golang:1.25.1-alpine AS builder
 WORKDIR /app
 
 COPY go.mod go.sum ./
@@ -9,6 +8,11 @@ COPY . .
 
 RUN go build -o app ./cmd/server
 
-EXPOSE 8080
+FROM alpine:latest
+WORKDIR /app
 
+COPY --from=builder /app/app .
+COPY --from=builder /app/docs ./docs
+
+EXPOSE 8080
 CMD ["./app"]

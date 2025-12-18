@@ -55,6 +55,17 @@ type createGroupReq struct {
 	Members []string `json:"members"`
 }
 
+// CreateGroupHandler godoc
+// @Summary Create a group
+// @Description Admin creates a new group
+// @Tags Groups
+// @Accept json
+// @Produce json
+// @Param group body createGroupReq true "Group info"
+// @Success 201 {object} Group
+// @Failure 400 {object} map[string]string "error"
+// @Security ApiKeyAuth
+// @Router /admin/groups [post]
 func CreateGroupHandler(c *gin.Context) {
 	var req createGroupReq
 	if err := c.ShouldBindJSON(&req); err != nil {
@@ -74,7 +85,14 @@ func CreateGroupHandler(c *gin.Context) {
 	c.JSON(http.StatusCreated, g)
 }
 
-// ListGroupsHandler — вернуть все группы (админ) или группы в которых состоит пользователь
+// ListGroupsHandler godoc
+// @Summary List groups
+// @Description List groups (user sees only joined groups)
+// @Tags Groups
+// @Produce json
+// @Success 200 {array} Group
+// @Security ApiKeyAuth
+// @Router /groups/ [get]
 func ListGroupsHandler(c *gin.Context) {
 	user := getUserID(c)
 	groupMu.Lock()
@@ -100,7 +118,14 @@ func ListGroupsHandler(c *gin.Context) {
 	c.JSON(http.StatusOK, out)
 }
 
-// RequestJoinHandler — студент отправляет заявку на вступление в группу
+// RequestJoinHandler godoc
+// @Summary Request to join a group
+// @Description Student sends join request
+// @Tags Groups
+// @Param groupId path string true "Group ID"
+// @Success 201 {object} JoinRequest
+// @Failure 401 {object} map[string]string "unauthorized"
+// @Router /groups/{groupId}/join [post]
 func RequestJoinHandler(c *gin.Context) {
 	user := getUserID(c)
 	if user == "" {

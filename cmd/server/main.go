@@ -1,8 +1,29 @@
+// @securityDefinitions.apikey BearerAuth
+// @in header
+// @name Authorization
+// @description Type "Bearer" followed by your JWT token.
+
+// @title UniConnect API
+// @version 1.0
+// @description API for University Social Platform
+// @termsOfService http://uniconnect.local/terms/
+
+// @contact.name API Support
+// @contact.email support@uniconnect.local
+
+// @license.name MIT
+// @license.url https://opensource.org/licenses/MIT
+
+// @host localhost:8080
+// @BasePath /api
+
 package main
 
 import (
 	"log"
 	"net/http"
+	"os"
+	"strconv"
 
 	"uniconnect/internal/auth"
 	"uniconnect/internal/database"
@@ -13,6 +34,11 @@ import (
 	"uniconnect/internal/websocket"
 
 	"github.com/gin-gonic/gin"
+
+	_ "uniconnect/docs"
+
+	swaggerFiles "github.com/swaggo/files"
+	ginSwagger "github.com/swaggo/gin-swagger"
 )
 
 func main() {
@@ -22,10 +48,19 @@ func main() {
 	}
 
 	// Redis
-	redis.Connect("localhost", "", 6379)
+	host := os.Getenv("REDIS_HOST")
+	password := os.Getenv("REDIS_PASSWORD")
+	portStr := os.Getenv("REDIS_PORT")
+	port, _ := strconv.Atoi(portStr)
+
+	redis.Connect(host, password, port)
 
 	// Gin
 	r := gin.Default()
+	r.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
+	r.GET("/swagger", func(c *gin.Context) {
+		c.Redirect(http.StatusMovedPermanently, "/swagger/index.html")
+	})
 
 	// ───────────────────────────────
 	// API ROOT

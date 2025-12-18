@@ -5,12 +5,15 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/gin-gonic/gin"
 	"uniconnect/internal/database"
+
+	"github.com/gin-gonic/gin"
 )
 
 // ==========================
-//       COMMENT MODEL
+//
+//	COMMENT MODEL
+//
 // ==========================
 type Comment struct {
 	ID        int       `db:"id" json:"id"`
@@ -24,7 +27,17 @@ type Comment struct {
 //       COMMENT HANDLERS
 // ==========================
 
-// CreateCommentHandler создаёт комментарий к посту
+// CreateCommentHandler creates a comment for a post
+// @Summary Create a comment
+// @Description Creates a new comment under a given post
+// @Tags posts
+// @Param postId path int true "Post ID"
+// @Param comment body Comment true "Comment content"
+// @Success 201 {object} Comment
+// @Failure 400 {object} map[string]string
+// @Failure 500 {object} map[string]string
+// @Router /posts/commentary/{postId} [post]
+// @Security ApiKeyAuth
 func CreateCommentHandler(c *gin.Context) {
 	db := database.DB
 	postID, err := strconv.Atoi(c.Param("postId"))
@@ -65,7 +78,16 @@ func CreateCommentHandler(c *gin.Context) {
 	c.JSON(http.StatusCreated, comment)
 }
 
-// ListCommentsHandler возвращает все комментарии для поста
+// ListCommentsHandler lists all comments for a post
+// @Summary List comments
+// @Description Returns all comments under a given post, ordered by creation time
+// @Tags posts
+// @Param postId path int true "Post ID"
+// @Success 200 {array} Comment
+// @Failure 400 {object} map[string]string
+// @Failure 500 {object} map[string]string
+// @Router /posts/commentary/{postId} [get]
+// @Security ApiKeyAuth
 func ListCommentsHandler(c *gin.Context) {
 	db := database.DB
 	postID, err := strconv.Atoi(c.Param("postId"))
