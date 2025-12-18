@@ -1,0 +1,37 @@
+services:
+  uniconnect-db:
+    image: postgres:16
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: uniconnect
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d uniconnect"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+
+  uniconnect-redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+
+  uniconnect-api:
+    build: .
+    environment:
+      DATABASE_URL: "postgres://postgres:postgres@uniconnect-db:5432/uniconnect?sslmode=disable"
+      REDIS_HOST: "uniconnect-redis"
+    ports:
+      - "8080:8080"
+    depends_on:
+      uniconnect-db:
+        condition: service_healthy
+      uniconnect-redis:
+        condition: service_healthy
