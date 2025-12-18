@@ -22,7 +22,7 @@ func main() {
 	}
 
 	// Redis
-	redis.Connect("localhost", "", 6379)
+	redis.Connect("uniconnect-redis", "", 6379)
 
 	// Gin
 	r := gin.Default()
@@ -33,10 +33,7 @@ func main() {
 	api := r.Group("/api")
 
 	// setup (создание админа по токену)
-	setup := api.Group("/setup")
-	{
-		setup.POST("/create-admin", auth.CreateAdminSetupHandler)
-	}
+	// UPDATE users SET role = 'admin' WHERE username = 'admin';
 
 	// ───────────────────────────────
 	// AUTH

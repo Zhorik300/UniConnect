@@ -2,6 +2,7 @@ package database
 
 import (
 	"log"
+	"os"
 
 	"github.com/jmoiron/sqlx"
 	_ "github.com/lib/pq"
@@ -10,7 +11,11 @@ import (
 var DB *sqlx.DB
 
 func Connect() error {
-	dsn := "postgres://admin:password@localhost:5432/uniconnect?sslmode=disable"
+	dsn := os.Getenv("DATABASE_URL")
+	if dsn == "" {
+		// дефолт для docker-compose
+		dsn = "postgres://postgres:postgres@uniconnect-db:5432/uniconnect?sslmode=disable"
+	}
 
 	var err error
 	DB, err = sqlx.Connect("postgres", dsn)
