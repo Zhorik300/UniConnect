@@ -4,12 +4,15 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/gin-gonic/gin"
-	"uniconnect/internal/websocket"
 	"uniconnect/internal/auth"
 	"uniconnect/internal/database"
+	"uniconnect/internal/groups"
+	"uniconnect/internal/messages"
 	"uniconnect/internal/posts"
 	"uniconnect/internal/redis"
+	"uniconnect/internal/websocket"
+
+	"github.com/gin-gonic/gin"
 )
 
 func main() {
@@ -28,6 +31,12 @@ func main() {
 	// API ROOT
 	// ───────────────────────────────
 	api := r.Group("/api")
+
+	// setup (создание админа по токену)
+	setup := api.Group("/setup")
+	{
+		setup.POST("/create-admin", auth.CreateAdminSetupHandler)
+	}
 
 	// ───────────────────────────────
 	// AUTH
@@ -73,6 +82,16 @@ func main() {
 		postRoutes.GET("/", posts.ListPostsHandler)
 		postRoutes.PUT("/:id", posts.UpdatePostHandler)
 		postRoutes.DELETE("/:id", posts.DeletePostHandler)
+		postRoutes.GET("/search", posts.SearchPosts)
+
+		// Likes
+		postRoutes.POST("/:id/like", posts.LikePostHandler)
+		postRoutes.DELETE("/:id/like", posts.UnlikePostHandler)
+		postRoutes.GET("/liked", posts.ListLikedPostsHandler)
+
+		// Saves
+		postRoutes.POST("/:id/save", posts.SavePostHandler)
+		postRoutes.DELETE("/:id/save", posts.UnsavePostHandler)
 	}
 
 	// ───────────────────────────────
@@ -84,6 +103,33 @@ func main() {
 		commentRoutes.POST("/:postId", posts.CreateCommentHandler)
 		commentRoutes.GET("/:postId", posts.ListCommentsHandler)
 	}
+
+	// ───────────────────────────────
+	// MESSAGES (личные сообщения)
+	// ───────────────────────────────
+	messageRoutes := api.Group("/messages")
+	messageRoutes.Use(auth.AuthMiddleware(""))
+	{
+		messageRoutes.POST("/:chatId", messages.SendMessageHandler)
+		messageRoutes.GET("/:chatId", messages.ListMessagesHandler)
+	}
+
+	// ───────────────────────────────
+	// GROUPS (группы/чат-группы и заявки)
+	// ───────────────────────────────
+	groupRoutes := api.Group("/groups")
+	groupRoutes.Use(auth.AuthMiddleware(""))
+	{
+		groupRoutes.POST("/:groupId/join", groups.RequestJoinHandler) // студент — запрос на вступление
+		groupRoutes.GET("/", groups.ListGroupsHandler)                // список групп (доступно всем авторизованным)
+	}
+
+	// Admin: управление группами и заявками
+	adminRoutes.POST("/groups", groups.CreateGroupHandler)                             // создать группу
+	adminRoutes.GET("/groups", groups.ListGroupsHandler)                               // список всех групп
+	adminRoutes.GET("/groups/requests", groups.ListJoinRequestsHandler)                // список заявок
+	adminRoutes.POST("/groups/requests/:id/approve", groups.ApproveJoinRequestHandler) // подтвердить заявку
+	adminRoutes.DELETE("/groups/requests/:id", groups.RemoveJoinRequestHandler)        // удалить/отклонить заявку
 
 	// ───────────────────────────────
 	// WEBSOCKETS
